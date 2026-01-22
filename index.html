@@ -1,0 +1,714 @@
+woul<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Oscar Nominations Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-light: #F4E4BC;
+            --gold-dark: #B8960C;
+            --dark: #1a1a2e;
+            --darker: #0f0f1a;
+            --light: #f8f8f8;
+            --watched: #2ecc71;
+            --watched-bg: rgba(46, 204, 113, 0.15);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(212, 175, 55, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 50%, #16213e 100%);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: var(--gold);
+            text-shadow: 0 2px 20px rgba(212, 175, 55, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 25px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .categories {
+            display: grid;
+            gap: 30px;
+        }
+
+        .category {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .category h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category h2::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+
+        .nominees {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .nominee {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nominee:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .nominee.watched {
+            background: var(--watched-bg);
+            border-color: var(--watched);
+        }
+
+        .nominee.watched .check {
+            background: var(--watched);
+            border-color: var(--watched);
+        }
+
+        .nominee.watched .check::after {
+            opacity: 1;
+        }
+
+        .check {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .check::after {
+            content: '\2713';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nominee-info {
+            flex: 1;
+        }
+
+        .movie-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--light);
+        }
+
+        .movie-detail {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 3px;
+        }
+
+        .nomination-count {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--gold);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 380px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 1px solid var(--border);
+            padding: 30px 25px;
+            overflow-y: auto;
+            max-height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .unwatched-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .unwatched-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .unwatched-item:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: var(--gold);
+        }
+
+        .unwatched-item .movie-title {
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: var(--darker);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--darker);
+            border-radius: 50%;
+        }
+
+        .all-watched {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .all-watched-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .reset-btn {
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+            padding: 14px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 320px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: none;
+                border-left: none;
+                border-top: 1px solid var(--border);
+            }
+
+            .main-content {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-content {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .stats {
+                gap: 20px;
+            }
+
+            .stat-number {
+                font-size: 1.8rem;
+            }
+
+            .nominees {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .category {
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <header>
+            <h1>98th Academy Awards</h1>
+            <p class="subtitle">2026 Oscar Nominations Tracker</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number" id="watched-count">0</div>
+                    <div class="stat-label">Watched</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="total-count">0</div>
+                    <div class="stat-label">Total Movies</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="progress">0%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+            </div>
+        </header>
+        <div class="categories" id="categories"></div>
+    </div>
+
+    <aside class="sidebar">
+        <h2>Movies To Watch</h2>
+        <p class="sidebar-subtitle">Sorted by nominations (excludes docs & shorts)</p>
+        <div class="unwatched-list" id="unwatched-list"></div>
+        <button class="reset-btn" onclick="resetAll()">Reset All Progress</button>
+    </aside>
+
+    <script>
+        const STORAGE_KEY = 'oscar2026_watched';
+        const EXPIRY_DAYS = 60;
+
+        const nominations = {
+            "Best Picture": [
+                { title: "Sinners", noms: 16 },
+                { title: "One Battle After Another", noms: 13 },
+                { title: "Frankenstein", noms: 9 },
+                { title: "Sentimental Value", noms: 9 },
+                { title: "Hamnet", noms: 7 },
+                { title: "Marty Supreme", noms: 7 },
+                { title: "F1", noms: 4 },
+                { title: "Train Dreams", noms: 3 },
+                { title: "Bugonia", noms: 3 },
+                { title: "The Secret Agent", noms: 4 }
+            ],
+            "Best Director": [
+                { title: "Sinners", detail: "Ryan Coogler" },
+                { title: "One Battle After Another", detail: "Paul Thomas Anderson" },
+                { title: "Hamnet", detail: "Chloé Zhao" },
+                { title: "Marty Supreme", detail: "Josh Safdie" },
+                { title: "Sentimental Value", detail: "Joachim Trier" }
+            ],
+            "Best Actor": [
+                { title: "Sinners", detail: "Michael B. Jordan" },
+                { title: "One Battle After Another", detail: "Leonardo DiCaprio" },
+                { title: "Marty Supreme", detail: "Timothée Chalamet" },
+                { title: "Blue Moon", detail: "Ethan Hawke", noms: 2 },
+                { title: "The Secret Agent", detail: "Wagner Moura" }
+            ],
+            "Best Actress": [
+                { title: "Hamnet", detail: "Jessie Buckley" },
+                { title: "If I Had Legs I'd Kick You", detail: "Rose Byrne", noms: 1 },
+                { title: "Sentimental Value", detail: "Renate Reinsve" },
+                { title: "Bugonia", detail: "Emma Stone" },
+                { title: "Song Sung Blue", detail: "Kate Hudson", noms: 1 }
+            ],
+            "Best Supporting Actor": [
+                { title: "Frankenstein", detail: "Jacob Elordi" },
+                { title: "One Battle After Another", detail: "Sean Penn" },
+                { title: "Sentimental Value", detail: "Stellan Skarsgård" },
+                { title: "One Battle After Another", detail: "Benicio del Toro" },
+                { title: "Sinners", detail: "Delroy Lindo" }
+            ],
+            "Best Supporting Actress": [
+                { title: "Sentimental Value", detail: "Elle Fanning" },
+                { title: "Sentimental Value", detail: "Inga Ibsdotter Lilieaas" },
+                { title: "Weapons", detail: "Amy Madigan", noms: 1 },
+                { title: "Sinners", detail: "Wunmi Mosaku" },
+                { title: "One Battle After Another", detail: "Teyana Taylor" }
+            ],
+            "Best Original Screenplay": [
+                { title: "Blue Moon", detail: "Robert Kaplow" },
+                { title: "It Was Just an Accident", detail: "Jafar Panahi", noms: 2 },
+                { title: "Marty Supreme", detail: "Ronald Bronstein & Josh Safdie" },
+                { title: "Sentimental Value", detail: "Eskil Vogt & Joachim Trier" },
+                { title: "Sinners", detail: "Ryan Coogler" }
+            ],
+            "Best Adapted Screenplay": [
+                { title: "Bugonia", detail: "Will Tracy" },
+                { title: "Frankenstein", detail: "Guillermo del Toro" },
+                { title: "Hamnet", detail: "Chloé Zhao & Maggie O'Farrell" },
+                { title: "One Battle After Another", detail: "Paul Thomas Anderson" },
+                { title: "Train Dreams", detail: "Clint Bailey & Greg Kwedar" }
+            ],
+            "Best Animated Feature": [
+                { title: "Arco", noms: 1 },
+                { title: "Elio", noms: 1 },
+                { title: "KPop Demon Hunters", noms: 2 },
+                { title: "Little Amélie or the Character of Rain", noms: 1 },
+                { title: "Zootopia 2", noms: 1 }
+            ],
+            "Best International Feature": [
+                { title: "The Secret Agent", detail: "Brazil" },
+                { title: "It Was Just an Accident", detail: "France" },
+                { title: "Sentimental Value", detail: "Norway" },
+                { title: "Sirât", detail: "Spain", noms: 2 },
+                { title: "The Voice of Hind Rajab", detail: "Tunisia", noms: 1 }
+            ],
+            "Best Documentary Feature": [
+                { title: "The Perfect Neighbor", noms: 1, isDoc: true },
+                { title: "The Alabama Solution", noms: 1, isDoc: true },
+                { title: "Come See Me in the Good Light", noms: 1, isDoc: true },
+                { title: "Cutting Through Rocks", noms: 1, isDoc: true },
+                { title: "Mr. Nobody Against Putin", noms: 1, isDoc: true }
+            ],
+            "Best Original Score": [
+                { title: "Bugonia", detail: "Jerskin Fendrix" },
+                { title: "Frankenstein", detail: "Alexandre Desplat" },
+                { title: "Hamnet", detail: "Max Richter" },
+                { title: "One Battle After Another", detail: "Jonny Greenwood" },
+                { title: "Sinners", detail: "Ludwig Göransson" }
+            ],
+            "Best Original Song": [
+                { title: "KPop Demon Hunters", detail: '"Golden"' },
+                { title: "Train Dreams", detail: '"Train Dreams"' },
+                { title: "Diane Warren: Relentless", detail: '"Dear Me"', noms: 1 },
+                { title: "Sinners", detail: '"I Lied To You"' },
+                { title: "Viva Verdi!", detail: '"Sweet Dreams Of Joy"', noms: 1 }
+            ],
+            "Best Sound": [
+                { title: "F1" },
+                { title: "Frankenstein" },
+                { title: "One Battle After Another" },
+                { title: "Sinners" },
+                { title: "Sirât" }
+            ],
+            "Best Cinematography": [
+                { title: "Frankenstein" },
+                { title: "Marty Supreme" },
+                { title: "One Battle After Another" },
+                { title: "Sinners" },
+                { title: "Train Dreams" }
+            ],
+            "Best Film Editing": [
+                { title: "F1" },
+                { title: "Marty Supreme" },
+                { title: "One Battle After Another" },
+                { title: "Sentimental Value" },
+                { title: "Sinners" }
+            ],
+            "Best Production Design": [
+                { title: "Frankenstein" },
+                { title: "Hamnet" },
+                { title: "Marty Supreme" },
+                { title: "One Battle After Another" },
+                { title: "Sinners" }
+            ],
+            "Best Costume Design": [
+                { title: "Avatar: Fire and Ash", noms: 2 },
+                { title: "Frankenstein" },
+                { title: "Hamnet" },
+                { title: "Marty Supreme" },
+                { title: "Sinners" }
+            ],
+            "Best Makeup and Hairstyling": [
+                { title: "Frankenstein" },
+                { title: "Kokuho", noms: 1 },
+                { title: "Sinners" },
+                { title: "The Smashing Machine", noms: 1 },
+                { title: "The Ugly Stepsister", noms: 1 }
+            ],
+            "Best Visual Effects": [
+                { title: "Avatar: Fire and Ash" },
+                { title: "F1" },
+                { title: "Jurassic World Rebirth", noms: 1 },
+                { title: "The Lost Bus", noms: 1 },
+                { title: "Sinners" }
+            ],
+            "Best Casting": [
+                { title: "Sinners" },
+                { title: "One Battle After Another" },
+                { title: "Hamnet" },
+                { title: "Marty Supreme" },
+                { title: "The Secret Agent" }
+            ],
+            "Best Live Action Short": [
+                { title: "Butcher's Stain", noms: 1, isShort: true },
+                { title: "A Friend of Dorothy", noms: 1, isShort: true },
+                { title: "Jane Austen's Period Drama", noms: 1, isShort: true },
+                { title: "The Singers", noms: 1, isShort: true },
+                { title: "Two People Exchanging Saliva", noms: 1, isShort: true }
+            ],
+            "Best Animated Short": [
+                { title: "Butterfly", noms: 1, isShort: true },
+                { title: "Forevergreen", noms: 1, isShort: true },
+                { title: "The Girl Who Cried Pearls", noms: 1, isShort: true },
+                { title: "Retirement Plan", noms: 1, isShort: true },
+                { title: "The Three Sisters", noms: 1, isShort: true }
+            ],
+            "Best Documentary Short": [
+                { title: "All the Empty Rooms", noms: 1, isShort: true, isDoc: true },
+                { title: "Armed Only with a Camera", noms: 1, isShort: true, isDoc: true },
+                { title: "Children No More", noms: 1, isShort: true, isDoc: true },
+                { title: "The Devil Is Busy", noms: 1, isShort: true, isDoc: true },
+                { title: "Perfectly a Strangeness", noms: 1, isShort: true, isDoc: true }
+            ]
+        };
+
+        // Build movie database with nomination counts
+        const movieDb = {};
+        for (const [category, nominees] of Object.entries(nominations)) {
+            for (const nom of nominees) {
+                const key = nom.title.toLowerCase();
+                if (!movieDb[key]) {
+                    movieDb[key] = {
+                        title: nom.title,
+                        nominations: 0,
+                        isDoc: false,
+                        isShort: false
+                    };
+                }
+                movieDb[key].nominations++;
+                if (nom.isDoc) movieDb[key].isDoc = true;
+                if (nom.isShort) movieDb[key].isShort = true;
+            }
+        }
+
+        // Storage functions
+        function getWatched() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (!data) return {};
+
+            const parsed = JSON.parse(data);
+            const now = Date.now();
+
+            if (parsed.expiry && now > parsed.expiry) {
+                localStorage.removeItem(STORAGE_KEY);
+                return {};
+            }
+
+            return parsed.watched || {};
+        }
+
+        function saveWatched(watched) {
+            const expiry = Date.now() + (EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ watched, expiry }));
+        }
+
+        function toggleWatched(title) {
+            const key = title.toLowerCase();
+            const watched = getWatched();
+            watched[key] = !watched[key];
+            saveWatched(watched);
+            render();
+        }
+
+        function resetAll() {
+            if (confirm('Reset all watched progress?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                render();
+            }
+        }
+
+        function updateStats() {
+            const watched = getWatched();
+            const allMovies = Object.keys(movieDb);
+            const watchedCount = allMovies.filter(k => watched[k]).length;
+            const total = allMovies.length;
+
+            document.getElementById('watched-count').textContent = watchedCount;
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('progress').textContent = Math.round((watchedCount / total) * 100) + '%';
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categories');
+            const watched = getWatched();
+            container.innerHTML = '';
+
+            for (const [category, nominees] of Object.entries(nominations)) {
+                const categoryEl = document.createElement('div');
+                categoryEl.className = 'category';
+
+                let nomineesHtml = '';
+                for (const nom of nominees) {
+                    const isWatched = watched[nom.title.toLowerCase()];
+                    const noms = movieDb[nom.title.toLowerCase()].nominations;
+
+                    nomineesHtml += `
+                        <div class="nominee ${isWatched ? 'watched' : ''}" onclick="toggleWatched('${nom.title.replace(/'/g, "\\'")}')">
+                            <div class="check"></div>
+                            <div class="nominee-info">
+                                <div class="movie-title">${nom.title}</div>
+                                ${nom.detail ? `<div class="movie-detail">${nom.detail}</div>` : ''}
+                            </div>
+                            <span class="nomination-count">${noms} nom${noms > 1 ? 's' : ''}</span>
+                        </div>
+                    `;
+                }
+
+                categoryEl.innerHTML = `
+                    <h2>${category}</h2>
+                    <div class="nominees">${nomineesHtml}</div>
+                `;
+                container.appendChild(categoryEl);
+            }
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('unwatched-list');
+            const watched = getWatched();
+
+            // Get unwatched movies, excluding docs and shorts
+            const unwatched = Object.entries(movieDb)
+                .filter(([key, movie]) => !watched[key] && !movie.isDoc && !movie.isShort)
+                .sort((a, b) => b[1].nominations - a[1].nominations);
+
+            if (unwatched.length === 0) {
+                container.innerHTML = `
+                    <div class="all-watched">
+                        <div class="all-watched-icon">🏆</div>
+                        <p>You've watched all the movies!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = unwatched.map(([key, movie]) => `
+                <div class="unwatched-item" onclick="toggleWatched('${movie.title.replace(/'/g, "\\'")}')">
+                    <span class="movie-title">${movie.title}</span>
+                    <span class="badge">${movie.nominations}</span>
+                </div>
+            `).join('');
+        }
+
+        function render() {
+            renderCategories();
+            renderSidebar();
+            updateStats();
+        }
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
