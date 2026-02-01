@@ -379,6 +379,10 @@
                     <div class="stat-label">Total Movies</div>
                 </div>
                 <div class="stat">
+                    <div class="stat-number" id="noms-seen">0</div>
+                    <div class="stat-label">Nominations Seen</div>
+                </div>
+                <div class="stat">
                     <div class="stat-number" id="progress">0%</div>
                     <div class="stat-label">Progress</div>
                 </div>
@@ -635,8 +639,19 @@
             const watchedCount = allMovies.filter(k => watched[k]).length;
             const total = allMovies.length;
 
+            // Calculate nominations seen
+            let nomsSeen = 0;
+            let totalNoms = 0;
+            for (const [key, movie] of Object.entries(movieDb)) {
+                totalNoms += movie.nominations;
+                if (watched[key]) {
+                    nomsSeen += movie.nominations;
+                }
+            }
+
             document.getElementById('watched-count').textContent = watchedCount;
             document.getElementById('total-count').textContent = total;
+            document.getElementById('noms-seen').textContent = `${nomsSeen}/${totalNoms}`;
             document.getElementById('progress').textContent = Math.round((watchedCount / total) * 100) + '%';
         }
 
